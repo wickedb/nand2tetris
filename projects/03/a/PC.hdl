@@ -1,0 +1,36 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/PC.hdl
+
+/**
+ * A 16-bit counter with increment, load, and reset modes.
+ * if      (inc(t))   out(t+1) = out(t) + 1
+ * else if (load(t))  out(t+1) = in(t)
+ * else if (reset(t)) out(t+1) = 0
+ * else               out(t+1) = out(t)
+ *
+ * To select a mode, assert the relevant control bit,
+ * and de-assert the other two bits. 
+ */
+CHIP PC {
+    IN in[16],inc, load, reset;
+    OUT out[16];
+    
+    PARTS:
+    //// Replace this comment with your code.
+    
+    //incrementer
+    Inc16(in=dummyout1, out=incrementedout); 
+    //if inc==1, update old state
+    Mux16(a=dummyout2, b=incrementedout, sel=inc, out=oldstate);
+    //if load==1, write new val
+    Mux16(a=oldstate, b=in, sel=load, out=statevalue1);
+    //if reset==1, zero out the state
+    Mux16(a=statevalue1, b=false, sel=reset, out=statevalue2);
+    //check if any control signals are set (this tells the reg some WRITE will happen)
+    Or(a=inc, b=load, out=ctrlsig1);
+    Or(a=ctrlsig1, b=reset, out=ctrlsig);
+    //feed state into reg along with control signal
+    Register(in=statevalue2, load=ctrlsig, out=out, out=dummyout1, out=dummyout2);
+}

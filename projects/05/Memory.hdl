@@ -1,0 +1,36 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+/** 
+ * The Memory chip implements the complete address space of the Hack data memory,
+ * including RAM, memory mapped screen, and memory mapped keyboard.
+ * Outputs the value of the memory location specified by the address input.
+ * If (load == 1), sets the memory location specified by the address input
+ * to the value of the in input.
+ * Address space rules:
+ * Only the upper 16K + 8K + 1 words of the memory are used.
+ * Access to address 0 to 16383 (0x0000 to 0x3FFF) results in accessing the RAM;
+ * Access to address 16384 to 24575 (0x4000 to 0x5FFF) results in accessing the Screen memory map;
+ * Access to address 24576 (0x6000) results in accessing the Keyboard memory map.
+ */ 
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    //// Choose between dmem or IO peripherals (using addr[14] because then addr>0x3FFF)
+    DMux(in=load, sel=address[14], a=dmem, b=peripherals);
+    //// Choose between keyboard and screen (using addr[13] because its never set in the range 
+    //// 0x4000 to 0x5FFF, so if its set it means keyboard 
+    DMux(in=peripherals, sel=address[13], a=screen, b=keyboard);
+    //// PART 1 - data memory
+    RAM16K(in=in, load=dmem, address=address[0..13], out=dmemout);
+    //// PART 2 - screen memory map
+    Screen(in=in, load=screen, address=address[0..12], out=screenout);
+    //// PART 3 - keyboard memory map
+    Keyboard(out=keyboardout);
+    //// Muxing the 3 outputs - mux IO peripheral outputs and then dmem out 
+    Mux16(a=screenout, b=keyboardout, sel=address[13], out=peripheralsout);
+    Mux16(a=dmemout, b=peripheralsout, sel=address[14], out=out);
+}

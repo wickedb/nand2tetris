@@ -1,0 +1,25 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/b/RAM16K.hdl
+/**
+ * Memory of 16K 16-bit registers.
+ * If load is asserted, the value of the register selected by
+ * address is set to in; Otherwise, the value does not change.
+ * The value of the selected register is emitted by out.
+ */
+CHIP RAM16K {
+    IN in[16], load, address[14];
+    OUT out[16];
+
+    PARTS:
+    //// Replace this comment with your code.
+    //use msb of address to select bank
+    DMux8Way(in=load, sel=address[12..13], a=bank0, b=bank1, c=bank2, d=bank3, e=bank4, f=bank5, g=bank6, h=bank7);
+    //use lsb of address to select address in bank
+	RAM4K(in=in, load=bank0, address=address[0..11], out=outbank0);
+	RAM4K(in=in, load=bank1, address=address[0..11], out=outbank1);
+	RAM4K(in=in, load=bank2, address=address[0..11], out=outbank2);
+	RAM4K(in=in, load=bank3, address=address[0..11], out=outbank3);
+    Mux8Way16(a=outbank0, b=outbank1, c=outbank2, d=outbank3, e=outbank4, f=outbank5, g=outbank6, h=outbank7, sel=address[12..13], out=out);
+}
